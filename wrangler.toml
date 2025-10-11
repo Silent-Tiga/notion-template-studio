@@ -1,0 +1,37 @@
+# Cloudflare Workers 配置文件
+
+name = "notion2web-api"
+main = "cloudflare-worker-example.js"
+compatibility_date = "2024-08-15"
+compatibility_flags = ["nodejs_compat"]
+
+# 环境变量配置
+[vars]
+# 注意：在生产环境中，您应该使用wrangler secret命令来设置敏感环境变量
+# 例如：wrangler secret put NOTION_API_KEY
+
+# 开发环境配置
+[dev]
+# 本地开发服务器端口
+port = 8787
+# 自动打开浏览器
+# local_protocol = "https"
+
+# 路由配置
+[[routes]]
+# 生产环境路由 - 当部署到Cloudflare后，Worker将响应这个URL
+pattern = "your-domain.com/api/*"
+# 是否跳过JS验证（不推荐）
+# skip_js_validation = true
+
+# 资源绑定（如果需要）
+# [[kv_namespaces]]
+# binding = "MY_KV_NAMESPACE"
+# id = "<KV_NAMESPACE_ID>"
+
+# 构建配置
+# [build]
+# command = "npm run build"
+# cwd = "src"
+# upload.format = "modules"
+# upload.main = "worker.js"

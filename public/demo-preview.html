@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Template Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .demo-preview {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .demo-nav {
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .demo-nav-dots {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+        .demo-nav-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+        }
+        .demo-content {
+            padding: 2rem;
+            background-color: white;
+        }
+        .demo-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Notion Template Demo Preview</h1>
+            <p class="text-gray-600">This is a preview of your generated Notion template landing page.</p>
+        </div>
+
+        <div class="demo-preview">
+            <div class="demo-nav">
+                <div class="demo-nav-dots">
+                    <div class="demo-nav-dot bg-red-500"></div>
+                    <div class="demo-nav-dot bg-yellow-500"></div>
+                    <div class="demo-nav-dot bg-green-500"></div>
+                </div>
+                <span class="text-sm text-gray-500">notion-template-preview.html</span>
+            </div>
+
+            <div class="demo-content">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-bold mb-4">Notion Template Demo</h1>
+                        <p class="text-gray-600 mb-6">This is a demo of your Notion template converted to a beautiful landing page.</p>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                            Get This Template
+                        </button>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <img 
+                            src="https://via.placeholder.com/800x400?text=Notion+Template+Preview" 
+                            alt="Template Preview" 
+                            class="w-full h-auto rounded-lg shadow-md"
+                        />
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h2 class="text-xl font-semibold mb-4">Key Features</h2>
+                        <ul class="space-y-2">
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Beautiful responsive design</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Easy to customize</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Ready to sell</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                            Buy Now - $19.99
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-footer">
+            <p>This is a demo preview. Upgrade to Creator Pro to remove watermarks and get unlimited access.</p>
+        </div>
+    </div>
+</body>
+</html>
