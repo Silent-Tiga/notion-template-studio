@@ -6,45 +6,45 @@ const HomePage: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero区域 */}
+      {/* Hero Section */}
       <section id="hero" className="mb-16 py-16">
         <div className="max-w-4xl mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-6">
-            将 Notion 内容转换为响应式网站
+            Convert Notion content into a responsive website
           </h1>
           <p className="text-base md:text-lg text-neutral-600 mb-8 max-w-2xl">
-            无需编码，AI 自动转换，轻松分享您的想法与知识。
+            No coding required. AI converts instantly — share your ideas easily.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mb-16">
             <button 
               onClick={() => navigate('/convert')}
               className="btn-primary text-sm px-6 py-2 rounded-github font-medium shadow-github"
             >
-              立即开始转换
+              Start Converting
             </button>
             <button 
               onClick={() => navigate('/pricing')}
               className="btn-secondary text-sm px-6 py-2 rounded-github font-medium"
             >
-              查看定价
+              View Pricing
             </button>
           </div>
         </div>
       
-        {/* 特色亮点 */}
+        {/* Feature Highlights */}
         <div id="features" className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-          {/* 快速转换 */}
+          {/* Fast Conversion */}
           <div className="card p-6">
             <div className="w-10 h-10 bg-neutral-100 rounded-github flex items-center justify-center mb-4">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
               </svg>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-neutral-900">几秒内完成转换</h3>
-            <p className="text-sm text-neutral-600">几秒钟内将Notion内容转换为网页</p>
+            <h3 className="text-lg font-semibold mb-2 text-neutral-900">Convert in seconds</h3>
+            <p className="text-sm text-neutral-600">Turn Notion content into a webpage in seconds</p>
           </div>
           
-          {/* 完全定制 */}
+          {/* Fully Customizable */}
           <div className="card p-6">
             <div className="w-10 h-10 bg-neutral-100 rounded-github flex items-center justify-center mb-4">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,11 +52,11 @@ const HomePage: React.FC = () => {
                 <path d="M12 6v6l4 2"></path>
               </svg>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-neutral-900">自定义主题</h3>
-            <p className="text-sm text-neutral-600">自定义主题、颜色和布局</p>
+            <h3 className="text-lg font-semibold mb-2 text-neutral-900">Custom themes</h3>
+            <p className="text-sm text-neutral-600">Customize theme, colors, and layout</p>
           </div>
           
-          {/* 安全可靠 */}
+          {/* Secure and Reliable */}
           <div className="card p-6">
             <div className="w-10 h-10 bg-neutral-100 rounded-github flex items-center justify-center mb-4">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,8 +64,8 @@ const HomePage: React.FC = () => {
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-neutral-900">数据加密</h3>
-            <p className="text-sm text-neutral-600">数据加密传输，隐私安全</p>
+            <h3 className="text-lg font-semibold mb-2 text-neutral-900">Encrypted data</h3>
+            <p className="text-sm text-neutral-600">Encrypted transmission keeps your data private</p>
           </div>
         </div>
       </section>

@@ -34,13 +34,13 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        showNotification('下载已成功开始！', 'success');
+        showNotification('Download started successfully!', 'success');
       } catch (error) {
         console.error('下载文件失败:', error);
-        showNotification('下载文件失败，请稍后重试。', 'error');
+        showNotification('Failed to download file. Please try again later.', 'error');
       }
     } else {
-      showNotification('没有可下载的包。', 'error');
+      showNotification('No package available for download.', 'error');
     }
   };
 
@@ -59,24 +59,24 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
             <Package className="text-primary" size={28} />
           </div>
           <p className="text-neutral-700 font-medium text-center text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-            正在准备您的导出包...
+            Preparing your export package...
           </p>
           <p className="text-neutral-500 text-sm mt-3 max-w-xs text-center">
-            编译所有资源可能需要一些时间，请稍候
+            Compiling resources may take a moment. Please wait.
           </p>
           
           {/* 装饰气泡 */}
           <div className="bubble-tr absolute top-10 right-10 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-1.5">
               <span className="text-primary font-bold">📦</span>
-              <span>打包中</span>
+              <span>Packaging</span>
             </div>
           </div>
           
           <div className="bubble-bl absolute bottom-10 left-10 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small" style={{ animationDelay: '0.3s' }} hover:shadow-md transition-all duration-300>
             <div className="flex items-center gap-1.5">
               <span className="text-secondary font-bold">⚡</span>
-              <span>处理中</span>
+              <span>Processing</span>
             </div>
           </div>
         </div>
@@ -93,38 +93,38 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
         <div className="absolute top-1/2 left-1/2 w-full h-full bg-grid opacity-5 pointer-events-none" aria-hidden="true" />
         
         <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full w-20 h-20 flex items-center justify-center mb-8 relative z-10 shadow-md group hover:from-primary/20 hover:to-secondary/20 transition-all duration-300 hover:shadow-lg">
-          <Package className="text-primary" size={32} group-hover:scale-110 transition-transform duration-300 />
+          <Package className="text-primary group-hover:scale-110 transition-transform duration-300" size={32} />
         </div>
         <h3 className="text-2xl font-semibold text-neutral-800 mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary relative z-10">
-          导出包即将准备就绪
+          Export package will be ready soon
         </h3>
         <p className="text-neutral-600 text-center max-w-md relative z-10 mb-8">
-          完成指南生成后，您将可以获取完整的导出包。
+          Once the guide is generated, you'll get the full export package.
         </p>
         
         <div className="bubble-tl bg-white/80 backdrop-blur-sm px-6 py-5 rounded-xl shadow-card border border-neutral-100 text-sm text-neutral-700 relative z-10 animate-float-small group hover:shadow-card-hover transition-all duration-300 hover:border-primary/20" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center gap-2 text-primary mb-4">
             <Info size={18} className="text-primary group-hover:scale-110 transition-transform duration-300" />
-            <span className="font-medium text-base group-hover:text-primary transition-colors duration-300">包含内容</span>
+            <span className="font-medium text-base group-hover:text-primary transition-colors duration-300">Included</span>
           </div>
           <ul className="space-y-3">
             <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
               <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                 <CheckCircle size={14} />
               </span>
-              <span>完整的模板文件</span>
+              <span>Complete template files</span>
             </li>
             <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
               <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                 <CheckCircle size={14} />
               </span>
-              <span>用户指南文档</span>
+              <span>User Guide document</span>
             </li>
             <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
               <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                 <CheckCircle size={14} />
               </span>
-              <span>实施说明</span>
+              <span>Implementation guide</span>
             </li>
           </ul>
         </div>
@@ -140,11 +140,11 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
       <div className="flex flex-wrap items-center justify-between bg-gradient-to-r from-primary/5 to-secondary/5 px-8 py-6 border-b border-neutral-100/50 gap-4">
         <div className="flex items-center gap-4 group">
           <div className="w-12 h-12 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center text-primary shadow-sm group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300">
-            <Package size={24} group-hover:scale-110 transition-transform duration-300 />
+            <Package size={24} className="group-hover:scale-110 transition-transform duration-300" />
           </div>
           <div>
-            <h3 className="font-medium text-neutral-800 text-xl group-hover:text-primary transition-colors duration-300">导出产品包</h3>
-            <p className="text-sm text-neutral-500">完整的网站文件和使用指南</p>
+            <h3 className="font-medium text-neutral-800 text-xl group-hover:text-primary transition-colors duration-300">Export Package</h3>
+            <p className="text-sm text-neutral-500">Complete site files and user guide</p>
           </div>
         </div>
         <button 
@@ -156,7 +156,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
             <>
               <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <span className="relative z-10"><Download size={18} />
-              立即下载</span>
+              Download Now</span>
               {/* 渐变发光效果 */}
               <span className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-xl blur opacity-0 group-hover:opacity-25 transition duration-700"></span>
             </>
@@ -164,7 +164,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
           {!exportPackage?.htmlFile && (
             <>
               <Download size={18} />
-              立即下载
+              Download Now
             </>
           )}
         </button>
@@ -181,10 +181,10 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
           
           <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/5 rounded-full blur-xl" />
           <h2 className="text-3xl font-bold text-neutral-800 mb-4 relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-            您的完整模板包
+            Your Complete Template Package
           </h2>
           <p className="text-neutral-600 text-lg max-w-3xl relative z-10">
-            包含实现您的模板所需的所有文件和文档
+            Includes all files and docs to implement your template
           </p>
         </div>
         
@@ -192,11 +192,11 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
           <div className="card-glass rounded-2xl p-6 bg-white/90 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 card-hover animate-float-small group hover:border-primary/20">
             <div className="flex items-start gap-4 mb-5">
               <div className="bubble-tl bg-gradient-to-br from-primary/10 to-primary/20 text-primary rounded-xl w-12 h-12 flex items-center justify-center flex-shrink-0 shadow-sm group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
-                <FileText size={24} group-hover:scale-110 transition-transform duration-300 />
+                <FileText size={24} className="group-hover:scale-110 transition-transform duration-300" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-800 text-xl group-hover:text-primary transition-colors duration-300">模板文件</h3>
-                <p className="text-neutral-600 text-sm mt-1">实现网站所需的所有源代码文件</p>
+                <h3 className="font-semibold text-neutral-800 text-xl group-hover:text-primary transition-colors duration-300">Template Files</h3>
+                <p className="text-neutral-600 text-sm">All source files required to implement the website</p>
               </div>
             </div>
             <ul className="space-y-3">
@@ -204,19 +204,19 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
                 <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                   <CheckCircle size={14} />
                 </span>
-                <span className="text-neutral-700">HTML/CSS/JS 源文件</span>
+                <span className="text-neutral-700">HTML/CSS/JS source files</span>
               </li>
               <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
                 <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                   <CheckCircle size={14} />
                 </span>
-                <span className="text-neutral-700">资源文件（图像、图标）</span>
+                <span className="text-neutral-700">Assets (images, icons)</span>
               </li>
               <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
                 <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                   <CheckCircle size={14} />
                 </span>
-                <span className="text-neutral-700">配置文件</span>
+                <span className="text-neutral-700">Configuration files</span>
               </li>
             </ul>
           </div>
@@ -224,11 +224,11 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
           <div className="card-glass rounded-2xl p-6 bg-white/90 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 card-hover animate-float-small group hover:border-secondary/20" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-start gap-4 mb-5">
               <div className="bubble-tl bg-gradient-to-br from-secondary/10 to-secondary/20 text-secondary rounded-xl w-12 h-12 flex items-center justify-center flex-shrink-0 shadow-sm group-hover:from-secondary/20 group-hover:to-secondary/30 transition-all duration-300">
-                <BookOpen size={24} group-hover:scale-110 transition-transform duration-300 />
+                <BookOpen size={24} className="group-hover:scale-110 transition-transform duration-300" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-800 text-xl group-hover:text-secondary transition-colors duration-300">使用指南</h3>
-                <p className="text-neutral-600 text-sm mt-1">完整的用户指南和操作说明</p>
+                <h3 className="font-semibold text-neutral-800 text-xl group-hover:text-secondary transition-colors duration-300">Usage Guide</h3>
+                <p className="text-neutral-600 text-sm mt-1">Complete user guide and instructions</p>
               </div>
             </div>
             <ul className="space-y-3">
@@ -236,19 +236,19 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
                 <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                   <CheckCircle size={14} />
                 </span>
-                <span className="text-neutral-700">实现指南</span>
+                <span className="text-neutral-700">Implementation guide</span>
               </li>
               <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
                 <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                   <CheckCircle size={14} />
                 </span>
-                <span className="text-neutral-700">自定义技巧</span>
+                <span className="text-neutral-700">Customization tips</span>
               </li>
               <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform duration-300">
                 <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center text-success group-hover:scale-110 transition-transform duration-300">
                   <CheckCircle size={14} />
                 </span>
-                <span className="text-neutral-700">常见问题解答和故障排除</span>
+                <span className="text-neutral-700">FAQ and troubleshooting</span>
               </li>
             </ul>
           </div>
@@ -257,8 +257,8 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
         <div className="bubble-bl border border-primary/20 rounded-2xl p-7 bg-gradient-to-br from-primary/5 to-secondary/5 shadow-card transition-all duration-300 hover:shadow-card-hover animate-float-small group hover:border-primary/30 hover:bg-gradient-to-br hover:from-primary/10 hover:to-secondary/10 transition-all duration-500" style={{ animationDelay: '0.3s' }}>
           <div className="flex flex-wrap items-center justify-between gap-5">
             <div>
-              <h3 className="font-semibold text-neutral-800 mb-1 text-xl group-hover:text-primary transition-colors duration-300">已准备好下载</h3>
-              <p className="text-neutral-600">您的包已准备就绪，可以立即使用</p>
+              <h3 className="font-semibold text-neutral-800 mb-1 text-xl group-hover:text-primary transition-colors duration-300">Ready to download</h3>
+              <p className="text-neutral-600">Your package is ready and can be used immediately</p>
             </div>
             <button 
               onClick={downloadPackage}
@@ -266,7 +266,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ exportPackage, isProcessing }
             >
               <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <span className="relative z-10"><Download size={18} />
-              立即下载</span>
+              Download Now</span>
               {/* 渐变发光效果 */}
               <span className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-xl blur opacity-0 group-hover:opacity-25 transition duration-700"></span>
             </button>

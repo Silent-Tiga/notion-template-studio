@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notion到HTML转换器</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #4F46E5, #8B5CF6);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+    
+    .content {
+      padding: 25px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #4F46E5;
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+    
+    .button {
+      background-color: #4F46E5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    
+    .button:hover {
+      background-color: #4338CA;
+    }
+    
+    .button:disabled {
+      background-color: #a5b4fc;
+      cursor: not-allowed;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons button {
+        margin-bottom: 10px;
+        width: 100%;
+      }
+    }
+    
+    .theme-section {
+      background-color: #f9fafb;
+      padding: 20px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    
+    .theme-colors {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .color-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .color-input input[type="color"] {
+      width: 40px;
+      height: 30px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .color-input input[type="text"] {
+      flex: 1;
+      width: auto;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .status.success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    
+    .status.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    
+    .status.loading {
+      background-color: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+    
+    /* 预览区域样式 */
+    .preview-section {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .preview-title {
+      margin: 0;
+      color: #333;
+    }
+    
+    .preview-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .preview-content {
+      background-color: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    
+    .preview-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background-color: white;
+    }
+    
+    /* 调试信息面板样式 */
+    .debug-section {
+      margin-top: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .debug-header {
+      background-color: #f5f5f5;
+      padding: 12px 16px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 500;
+      color: #555;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .debug-header:hover {
+      background-color: #eeeeee;
+    }
+    
+    .debug-content {
+      display: none;
+      background-color: #fafafa;
+    }
+    
+    .debug-tabs {
+      display: flex;
+      background-color: #f0f0f0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .debug-tab {
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .debug-tab:hover {
+      background-color: #e8e8e8;
+      color: #333;
+    }
+    
+    .debug-tab.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+      background-color: #fafafa;
+    }
+    
+    .debug-body {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .debug-panel {
+      padding: 16px;
+      display: none;
+    }
+    
+    .debug-panel.active {
+      display: block;
+    }
+    
+    .debug-panel pre {
+      margin: 0;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .action-buttons .button {
+      flex: 1;
+    }
+    
+    .save-button {
+      background-color: #10b981;
+    }
+    
+    .save-button:hover {
+      background-color: #059669;
+    }
+    
+    .theme-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .info-box {
+      background-color: #e3f2fd;
+      border-left: 4px solid #1976d2;
+      padding: 10px 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+
+    .required {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .optional {
+      color: #6b7280;
+      font-weight: normal;
+      font-size: 0.85em;
+    }
+
+    .help-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .loading-indicator {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #4F46E5;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .option-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .option-input input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+    
+    .option-input label {
+      margin: 0;
+      font-weight: normal;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    
+    #customThemeSection {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    #customThemeSection.show {
+      max-height: 300px;
+    }
+    
+    @media (max-width: 600px) {
+      .theme-colors {
+        grid-template-columns: 1fr;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Notion到HTML转换器</h1>
+      <p>简单、高效的Notion页面一键转换工具</p>
+      <div class="info-box">
+        <strong>提示：</strong>本工具仅支持<strong>公开</strong>的Notion页面。请确保您的页面已设置为公开共享。
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="form-group">
+        <label for="notionUrl">Notion页面URL <span class="required">*</span></label>
+        <input 
+          type="text" 
+          id="notionUrl" 
+          placeholder="https://www.notion.so/your-page-url"
+          required
+        >
+        <small class="hint">确保页面已公开：在Notion中点击Share → Copy link → Anyone with the link can view</small>
+      </div>
+      
+      <!-- API密钥输入区域 - 可选，但推荐使用以获取更完整内容 -->
+        <div class="form-group">
+          <label for="apiKey">Notion API密钥 <span class="optional">（推荐）</span></label>
+          <input 
+            type="password" 
+            id="apiKey" 
+            placeholder="输入你的Notion API密钥（前缀不限，如 ntn_ 或 secret_）"
+            title="使用API密钥可以获取更完整的页面内容">
+          <small class="hint">
+            使用API可以获取更完整的页面内容和样式
+          </small>
+        </div>
+      
+      <div class="theme-section">
+        <h3>美化设置</h3>
+        
+        <div class="form-group">
+          <label>预设主题</label>
+          <select id="presetTheme" class="form-group input">
+            <option value="light">明亮主题</option>
+            <option value="dark">暗黑主题</option>
+            <option value="soft">柔和主题</option>
+            <option value="modern">现代主题</option>
+            <option value="custom">自定义...</option>
+          </select>
+        </div>
+        
+        <div id="customThemeSection">
+          <h4 style="margin-top: 15px; margin-bottom: 10px; font-size: 0.9rem; color: #666;">自定义颜色</h4>
+          <div class="theme-colors">
+            <div class="color-input">
+              <input type="color" id="primaryColor" value="#4F46E5">
+              <input type="text" id="primaryColorText" value="#4F46E5">
+              <label>主色调</label>
+            </div>
+            <div class="color-input">
+              <input type="color" id="secondaryColor" value="#8B5CF6">
+              <input type="text" id="secondaryColorText" value="#8B5CF6">
+              <label>次要色调</label>
+            </div>
+            <div class="color-input">
+              <input type="color" id="backgroundColor" value="#ffffff">
+              <input type="text" id="backgroundColorText" value="#ffffff">
+              <label>背景色</label>
+            </div>
+            <div class="color-input">
+              <input type="color" id="textColor" value="#1F2937">
+              <input type="text" id="textColorText" value="#1F2937">
+              <label>文字色</label>
+            </div>
+          </div>
+        </div>
+        
+        <h4 style="margin-top: 20px; margin-bottom: 10px; font-size: 0.9rem; color: #666;">美化选项</h4>
+        <div class="theme-options">
+          <div class="option-input">
+            <input type="checkbox" id="enableShadows" checked>
+            <label for="enableShadows">启用阴影效果</label>
+          </div>
+          <div class="option-input">
+            <input type="checkbox" id="enableAnimations" checked>
+            <label for="enableAnimations">启用动画效果</label>
+          </div>
+          <div class="option-input">
+            <input type="checkbox" id="enableResponsive" checked>
+            <label for="enableResponsive">响应式设计</label>
+          </div>
+          <div class="option-input">
+            <input type="checkbox" id="enablePrintStyles" checked>
+            <label for="enablePrintStyles">优化打印样式</label>
+          </div>
+        </div>
+      </div>
+      
+      <button id="convertButton" class="button">开始转换</button>
+      <div class="loading-indicator" id="loading">
+        <div class="spinner"></div>
+        <span>正在转换中...</span>
+      </div>
+      
+      <div id="status" class="status error-box" style="display: none;"></div>
+      
+      <div id="previewSection" class="preview-section" style="display: none;">
+        <div class="preview-header">
+          <h3 class="preview-title">转换结果预览</h3>
+          <div class="preview-actions">
+            <button id="openNewTab" class="button" style="width: auto; padding: 6px 12px; font-size: 14px;">在新标签页打开</button>
+          </div>
+        </div>
+        <div id="previewContent" class="preview-content"></div>
+        
+        <!-- 调试信息面板 -->
+        <div class="debug-section">
+          <div class="debug-header" id="debugToggle">
+            <span>调试信息 ▼</span>
+          </div>
+          <div class="debug-content" id="debugContent">
+            <div class="debug-tabs">
+              <button class="debug-tab active" data-tab="api-response">API 响应</button>
+              <button class="debug-tab" data-tab="page-data">页面数据</button>
+              <button class="debug-tab" data-tab="error-info">错误信息</button>
+            </div>
+            <div class="debug-body">
+              <div id="apiResponseContent" class="debug-panel active">
+                <pre><code>等待转换...</code></pre>
+              </div>
+              <div id="pageDataContent" class="debug-panel">
+                <pre><code>等待转换...</code></pre>
+              </div>
+              <div id="errorInfoContent" class="debug-panel">
+                <pre><code>暂无错误</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button id="saveButton" class="button save-button">保存为HTML文件</button>
+          <button id="newConvertButton" class="button">新建转换</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 颜色选择器同步
+    document.querySelectorAll('input[type="color"]').forEach(colorInput => {
+      const textInput = document.getElementById(colorInput.id + 'Text');
+      colorInput.addEventListener('input', () => {
+        textInput.value = colorInput.value;
+      });
+      textInput.addEventListener('input', () => {
+        // 简单验证颜色格式
+        if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
+          colorInput.value = textInput.value;
+        }
+      });
+    });
+    
+    // 预设主题配置
+    const presetThemes = {
+      light: {
+        primaryColor: '#4F46E5',
+        secondaryColor: '#8B5CF6',
+        backgroundColor: '#ffffff',
+        textColor: '#1F2937'
+      },
+      dark: {
+        primaryColor: '#6366F1',
+        secondaryColor: '#A78BFA',
+        backgroundColor: '#111827',
+        textColor: '#F9FAFB'
+      },
+      soft: {
+        primaryColor: '#818CF8',
+        secondaryColor: '#C084FC',
+        backgroundColor: '#F9FAFB',
+        textColor: '#4B5563'
+      },
+      modern: {
+        primaryColor: '#3B82F6',
+        secondaryColor: '#8B5CF6',
+        backgroundColor: '#ffffff',
+        textColor: '#111827'
+      }
+    };
+    
+    // 监听主题预设选择
+    document.getElementById('presetTheme').addEventListener('change', (e) => {
+      const themeName = e.target.value;
+      const customSection = document.getElementById('customThemeSection');
+      
+      if (themeName === 'custom') {
+        customSection.classList.add('show');
+      } else {
+        customSection.classList.remove('show');
+        const theme = presetThemes[themeName];
+        if (theme) {
+          document.getElementById('primaryColor').value = theme.primaryColor;
+          document.getElementById('primaryColorText').value = theme.primaryColor;
+          document.getElementById('secondaryColor').value = theme.secondaryColor;
+          document.getElementById('secondaryColorText').value = theme.secondaryColor;
+          document.getElementById('backgroundColor').value = theme.backgroundColor;
+          document.getElementById('backgroundColorText').value = theme.backgroundColor;
+          document.getElementById('textColor').value = theme.textColor;
+          document.getElementById('textColorText').value = theme.textColor;
+        }
+      }
+    });
+    
+    // 获取主题设置
+    function getThemeConfig() {
+      return {
+        primaryColor: document.getElementById('primaryColor').value,
+        secondaryColor: document.getElementById('secondaryColor').value,
+        backgroundColor: document.getElementById('backgroundColor').value,
+        textColor: document.getElementById('textColor').value,
+        enableShadows: document.getElementById('enableShadows').checked,
+        enableAnimations: document.getElementById('enableAnimations').checked,
+        enableResponsive: document.getElementById('enableResponsive').checked,
+        enablePrintStyles: document.getElementById('enablePrintStyles').checked
+      };
+    }
+    
+    // 显示状态消息
+    function showStatus(message, type = 'loading') {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+      statusElement.style.display = 'block';
+    }
+    
+    // 隐藏状态消息
+    function hideStatus() {
+      document.getElementById('status').style.display = 'none';
+    }
+    
+    // 显示预览
+    function showPreview(htmlContent) {
+      const previewSection = document.getElementById('previewSection');
+      const previewContent = document.getElementById('previewContent');
+      
+      // 创建一个沙箱iframe来显示HTML
+      const iframe = document.createElement('iframe');
+      iframe.style.width = '100%';
+      iframe.style.height = '300px';
+      iframe.style.border = 'none';
+      
+      previewContent.innerHTML = '';
+      previewContent.appendChild(iframe);
+      
+      // 写入HTML内容到iframe
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(htmlContent);
+      iframeDoc.close();
+      
+      previewSection.style.display = 'block';
+    }
+    
+    // 处理转换按钮点击
+    document.getElementById('convertButton').addEventListener('click', async () => {
+      const notionUrl = document.getElementById('notionUrl').value.trim();
+      
+      if (!notionUrl) {
+        showStatus('请输入Notion页面URL', 'error');
+        return;
+      }
+      
+      // 显示加载状态
+      const convertButton = document.getElementById('convertButton');
+      const loadingIndicator = document.getElementById('loading');
+      convertButton.disabled = true;
+      convertButton.textContent = '正在转换...';
+      loadingIndicator.style.display = 'flex';
+      
+      // 隐藏之前的结果
+      hideStatus();
+      document.getElementById('previewSection').style.display = 'none';
+      
+      // 清空调试面板
+      updateDebugPanel('api-response', '加载中...');
+      updateDebugPanel('page-data', '加载中...');
+      updateDebugPanel('error-info', '暂无错误');
+      
+      try {
+        // 获取API密钥（可选）
+        const apiKey = document.getElementById('apiKey')?.value || '';
+        
+        const result = await window.electronAPI.convertNotion({
+          url: notionUrl,
+          themeConfig: getThemeConfig(),
+          apiKey: apiKey
+        });
+        
+        // 更新调试面板 - API响应
+        updateDebugPanel('api-response', JSON.stringify({
+          success: result.success,
+          method: result.method || 'unknown',
+          status: result.success ? 'success' : 'error'
+        }, null, 2));
+        
+        // 更新调试面板 - 页面数据
+        if (result.pageData) {
+          updateDebugPanel('page-data', JSON.stringify(result.pageData, null, 2));
+        }
+        
+        if (result.success) {
+          // 显示成功消息，包含使用的方法信息
+          const methodInfo = result.method === 'api' ? '（使用API方式）' : '（使用HTML抓取方式）';
+          showStatus(`转换成功！${methodInfo}`, 'success');
+          
+          // 如果是HTML抓取方式，提供使用API的建议
+          if (result.method === 'html') {
+            setTimeout(() => {
+              showStatus('提示：使用Notion API密钥可以获取更完整的页面内容', 'info');
+            }, 1500);
+          }
+          
+          showPreview(result.htmlContent);
+        } else {
+          const errorMessage = result.error || '未知错误';
+          showStatus(`转换失败: ${errorMessage}`, 'error');
+          updateDebugPanel('error-info', errorMessage);
+        }
+      } catch (error) {
+        console.error('转换错误:', error);
+        const errorMessage = `转换发生错误: ${error.message || '发生未知错误'}`;
+        showStatus(errorMessage, 'error');
+        updateDebugPanel('error-info', errorMessage + '\n\n' + (error.stack || ''));
+      } finally {
+        // 恢复按钮状态
+        convertButton.disabled = false;
+        convertButton.textContent = '开始转换';
+        loadingIndicator.style.display = 'none';
+      }
+    });
+    
+    // 新标签页打开预览
+    document.getElementById('openNewTab').addEventListener('click', () => {
+      const iframe = document.querySelector('#previewContent iframe');
+      if (iframe) {
+        const htmlContent = iframe.contentDocument.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      }
+    });
+    
+    // 调试面板切换
+    document.querySelectorAll('.debug-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // 移除所有活动状态
+        document.querySelectorAll('.debug-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.debug-panel').forEach(p => p.classList.remove('active'));
+        
+        // 添加当前活动状态
+        tab.classList.add('active');
+        const panelId = tab.getAttribute('data-tab') + 'Content';
+        document.getElementById(panelId).classList.add('active');
+      });
+    });
+    
+    // 调试面板折叠/展开
+    document.getElementById('debugToggle').addEventListener('click', () => {
+      const content = document.getElementById('debugContent');
+      const span = document.querySelector('#debugToggle span');
+      
+      if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        span.textContent = '调试信息 ▲';
+      } else {
+        content.style.display = 'none';
+        span.textContent = '调试信息 ▼';
+      }
+    });
+    
+    // 更新调试面板内容
+    function updateDebugPanel(panelId, content) {
+      const elementId = panelId + 'Content';
+      const panel = document.getElementById(elementId);
+      if (panel) {
+        panel.querySelector('code').textContent = content;
+      }
+    }
+    
+    // 处理保存按钮点击
+    document.getElementById('saveButton').addEventListener('click', async () => {
+      const iframe = document.querySelector('#previewContent iframe');
+      if (!iframe) return;
+      
+      const htmlContent = iframe.contentDocument.documentElement.outerHTML;
+      const title = iframe.contentDocument.title;
+      
+      try {
+        const result = await window.electronAPI.saveHtml({
+          content: htmlContent,
+          defaultPath: `${title.replace(/[^\w\s.-]/g, '_')}.html`
+        });
+        
+        if (result.success) {
+          showStatus(`文件已保存至: ${result.filePath}`, 'success');
+        }
+      } catch (error) {
+        showStatus(`保存失败: ${error.message}`, 'error');
+      }
+    });
+    
+    // 处理新建转换按钮
+    document.getElementById('newConvertButton').addEventListener('click', () => {
+      document.getElementById('notionUrl').value = '';
+      document.getElementById('previewSection').style.display = 'none';
+      hideStatus();
+      document.getElementById('notionUrl').focus();
+    });
+    
+    // 初始化
+    document.getElementById('notionUrl').focus();
+  </script>
+</body>
+</html>

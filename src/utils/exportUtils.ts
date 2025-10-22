@@ -15,11 +15,11 @@ export const createExportPackage = async (htmlContent: string): Promise<ExportPa
     
     // 生成一个简化的HTML文件内容（实际项目中可以包含更多样式和脚本）
     const completeHtml = `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notion页面导出</title>
+  <title>Notion Page Export</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
     h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; }
@@ -55,7 +55,7 @@ export const createExportPackage = async (htmlContent: string): Promise<ExportPa
     return {
       htmlFile: {
         name: 'notion-export.html',
-        content: '<html><body><h1>导出失败</h1><p>无法创建导出文件，请稍后重试。</p></body></html>',
+        content: '<html><body><h1>Export Failed</h1><p>Unable to create export file, please try again later.</p></body></html>',
         type: 'text/html'
       },
       assets: [],
@@ -63,7 +63,7 @@ export const createExportPackage = async (htmlContent: string): Promise<ExportPa
         exportDate: new Date().toISOString(),
         version: '1.0',
         source: 'aiNOTION Converter',
-        error: '导出过程中出现错误'
+        error: 'An error occurred during export'
       }
     };
   }

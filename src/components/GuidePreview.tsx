@@ -6,9 +6,10 @@ interface GuidePreviewProps {
   guide: AIGuide | null;
   isLoading: boolean;
   onShowNotification: (message: string, type?: NotificationType) => void;
+  onApplyTitleShorten?: () => void;
 }
 
-const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNotification }) => {
+const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNotification, onApplyTitleShorten }) => {
   const [copyStatus, setCopyStatus] = useState<string>('');
 
   const copyToClipboard = async (): Promise<void> => {
@@ -23,17 +24,17 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
       
       await navigator.clipboard.writeText(markdown);
       setCopyStatus('copied');
-      onShowNotification('指南已复制到剪贴板!', 'success');
+      onShowNotification('Guide copied to clipboard!', 'success');
       setTimeout(() => setCopyStatus(''), 2000);
     } catch (err) {
       setCopyStatus('error');
-      onShowNotification('复制失败，请重试', 'error');
+      onShowNotification('Copy failed, please try again', 'error');
       setTimeout(() => setCopyStatus(''), 2000);
     }
   };
 
   const downloadPDF = (): void => {
-    onShowNotification('PDF下载功能将在后续版本中实现', 'info');
+    onShowNotification('PDF download will be available in a future version', 'info');
   };
 
   if (isLoading) {
@@ -58,9 +59,9 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
               <span className="absolute -inset-1.5 border-2 border-dashed border-primary/30 rounded-full animate-spin-slow" />
             </div>
             
-            <h3 className="text-2xl font-bold text-gray-800 mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">正在生成您的Notion指南</h3>
-            <p className="text-gray-600 text-lg mb-2">我们的AI正在为您创建个性化模板</p>
-            <p className="text-gray-500">这通常需要几秒钟时间</p>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Generating your Notion guide</h3>
+            <p className="text-gray-600 text-lg mb-2">Our AI is creating a personalized template for you</p>
+            <p className="text-gray-500">This usually takes a few seconds</p>
             
             {/* 进度条 */}
             <div className="mt-10 w-80 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
@@ -71,14 +72,14 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
             <div className="bubble-tr absolute top-16 right-16 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-1.5">
                 <span className="text-primary font-bold">✨</span>
-                <span>AI生成中</span>
+                <span>AI generating</span>
               </div>
             </div>
             
-            <div className="bubble-bl absolute bottom-16 left-16 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small" style={{ animationDelay: '0.3s' }} hover:shadow-md transition-all duration-300>
+            <div className="bubble-bl absolute bottom-16 left-16 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small hover:shadow-md transition-all duration-300" style={{ animationDelay: '0.3s' }}>
               <div className="flex items-center gap-1.5">
                 <span className="text-secondary font-bold">📝</span>
-                <span>准备内容</span>
+                <span>Preparing content</span>
               </div>
             </div>
           </div>
@@ -100,13 +101,13 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
             <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full mb-8 shadow-lg transform transition-transform duration-500 hover:scale-110 group">
               <BookOpen className="w-8 h-8 text-primary group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h3 className="text-3xl font-bold text-gray-800 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">您的指南即将诞生</h3>
+            <h3 className="text-3xl font-bold text-gray-800 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Your guide is coming soon</h3>
             <p className="text-gray-600 mb-8 text-lg max-w-md mx-auto">
-              输入您的需求，我们将为您创建一个完整的Notion模板指南
+              Enter your needs and we will create a complete Notion template guide for you
             </p>
             <div className="bubble-tl bg-white/80 backdrop-blur-sm rounded-xl p-6 max-w-md mx-auto border border-white/50 shadow-card transform transition-all duration-500 hover:shadow-card-hover animate-float-small group hover:border-primary/20 hover:bg-white/90" style={{ animationDelay: '0.2s' }}>
               <p className="text-gray-700">
-                <span className="font-semibold text-primary group-hover:text-primary/90 transition-colors duration-300">提示:</span> 描述您想要的指南类型，例如"项目管理模板"或"个人任务跟踪器"
+                <span className="font-semibold text-primary group-hover:text-primary/90 transition-colors duration-300">Tip:</span> Describe the type of guide you want, e.g., "project management template" or "personal task tracker"
               </p>
             </div>
             
@@ -114,14 +115,14 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
             <div className="bubble-tr absolute top-16 right-16 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-1.5">
                 <span className="text-primary font-bold">💡</span>
-                <span>输入需求</span>
+                <span>Enter requirements</span>
               </div>
             </div>
             
-            <div className="bubble-bl absolute bottom-16 left-16 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small" style={{ animationDelay: '0.3s' }} hover:shadow-md transition-all duration-300>
+            <div className="bubble-bl absolute bottom-16 left-16 bg-white/50 p-3 rounded-lg text-xs text-neutral-500 shadow-sm backdrop-blur-sm animate-float-small hover:shadow-md transition-all duration-300" style={{ animationDelay: '0.3s' }}>
               <div className="flex items-center gap-1.5">
                 <span className="text-secondary font-bold">🚀</span>
-                <span>快速生成</span>
+                <span>Quick generation</span>
               </div>
             </div>
           </div>
@@ -143,7 +144,7 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-4 transform transition-transform duration-300 hover:scale-110">
               <BookOpen className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <h2 className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">指南预览</h2>
+            <h2 className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">Guide Preview</h2>
           </div>
           
           <div className="relative z-10 flex space-x-4">
@@ -151,7 +152,7 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
               onClick={copyToClipboard}
               className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden ${copyStatus === 'copied' ? 'bg-success text-white shadow-lg' : 'bg-white/20 text-white hover:bg-white/30 shadow-md'}`}
             >
-              <span className="relative z-10">{copyStatus === 'copied' ? '已复制' : '复制'}</span>
+              <span className="relative z-10">{copyStatus === 'copied' ? 'Copied' : 'Copy'}</span>
               {copyStatus !== 'copied' && (
                 <>
                   <span className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
@@ -170,6 +171,27 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
               <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <FileDown className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
             </button>
+          </div>
+        </div>
+
+        {/* 操作建议（Before/After + 一键应用） */}
+        <div className="px-8 pt-6">
+          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
+            <div className="font-semibold text-neutral-900 mb-2">AI 优化建议（可操作）</div>
+            <div className="text-sm text-neutral-700 mb-3">标题太长 → 建议缩短至 60 字以内，并突出核心关键词。</div>
+            <div className="flex gap-3 text-sm">
+              <div className="flex-1 p-3 rounded-lg border bg-white/60">
+                <div className="font-medium mb-1">Before</div>
+                <div className="text-neutral-700 opacity-90">示例：一个非常非常长的标题，超过了搜索引擎友好的显示长度...</div>
+              </div>
+              <div className="flex-1 p-3 rounded-lg border bg-white/60">
+                <div className="font-medium mb-1">After</div>
+                <div className="text-neutral-700 opacity-90">精简后的清晰标题，保留关键词，提升点击率</div>
+              </div>
+            </div>
+            <div className="pt-3">
+              <button onClick={onApplyTitleShorten} className="py-2 px-3 rounded-github bg-primary text-white hover:bg-primary-dark">应用建议</button>
+            </div>
           </div>
         </div>
 
@@ -201,7 +223,7 @@ const GuidePreview: React.FC<GuidePreviewProps> = ({ guide, isLoading, onShowNot
             <div className="relative z-10">
               <h3 className="text-xl font-semibold text-gray-800 mb-5 flex items-center group-hover:text-primary transition-colors duration-300">
                 <FileText className="w-5 h-5 mr-3 text-primary group-hover:scale-110 transition-transform duration-300" />
-                目录
+                Contents
               </h3>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {guide.steps?.map((step, index) => (

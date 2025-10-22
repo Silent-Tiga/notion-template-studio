@@ -79,3 +79,37 @@ export interface ExportPackage {
   assets: File[];
   metadata: ExportMetadata;
 }
+
+
+export interface PageNode {
+  id: string;
+  title: string;
+  slug: string;
+  html: string;
+  sourceId: string;
+  coverImage?: string;
+  icon?: string;
+  updatedAt?: string;
+}
+
+export interface SiteManifest {
+  siteTitle: string;
+  rootPageId?: string;
+  pages: PageNode[];
+  navigation: Array<{ title: string; slug: string }>;
+  generatedAt: string;
+}
+
+export type ProjectPlan = 'free' | 'pro' | 'business';
+
+export interface Project {
+  id: string;
+  ownerId: string;
+  siteTitle: string;
+  rootDatabaseId?: string;
+  mappings?: Record<string, any>;
+  hostingEnabled?: boolean;
+  exportEnabled?: boolean;
+  createdAt: string;
+  plan: ProjectPlan;
+}

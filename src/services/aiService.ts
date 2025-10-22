@@ -35,14 +35,14 @@ export const generateAIGuide = async (content: NotionContent): Promise<AIGuide> 
     }));
     
     return {
-      title: "AI 网站优化指南",
+      title: "AI Website Optimization Guide",
       steps: steps,
-      summary: "根据您的内容分析，我们提供了一系列优化建议，帮助您创建更加专业和吸引人的网站。",
+      summary: "Based on your content analysis, we provide optimization suggestions to help you build a more professional and engaging website.",
       timestamp: new Date().toISOString()
     };
   } catch (error) {
     console.error('Error generating AI guide:', error);
-    throw new Error('生成AI指南失败，请稍后重试。');
+    throw new Error('Failed to generate AI guide, please try again later.');
   }
 };
 
@@ -56,32 +56,32 @@ const generateGuideSections = (content: NotionContent): Array<{ title: string; c
   
   // 页面结构优化建议
   sections.push({
-    title: "页面结构优化",
+    title: "Page Structure",
     content: generateStructureSuggestions(content)
   });
   
   // 内容排版建议
   sections.push({
-    title: "内容排版",
+    title: "Typography",
     content: generateTypographySuggestions(content)
   });
   
   // 响应式设计建议
   sections.push({
-    title: "响应式设计",
-    content: "确保在移动设备上的良好显示效果，优化触控体验。建议使用弹性布局和响应式图像。"
+    title: "Responsive Design",
+    content: "Ensure great display on mobile devices and optimize touch interactions. Use flexible layouts and responsive images."
   });
   
   // SEO优化建议
   sections.push({
-    title: "SEO优化",
+    title: "SEO Optimization",
     content: generateSEOSuggestions(content)
   });
   
   // 互动元素建议
   sections.push({
-    title: "互动元素",
-    content: "考虑添加更多互动元素，如悬停效果、平滑滚动和简单动画，提升用户体验。"
+    title: "Interactive Elements",
+    content: "Consider adding interactive elements such as hover effects, smooth scrolling, and simple animations to improve user experience."
   });
   
   return sections;
@@ -97,22 +97,22 @@ const generateStructureSuggestions = (content: NotionContent): string => {
   const hasLists = content.content.some(item => item.type === 'list');
   const hasHeadings = content.content.some(item => item.type === 'heading');
   
-  let suggestions = [];
+  let suggestions: string[] = [];
   
   if (!hasImages) {
-    suggestions.push("添加相关图片可以提高页面吸引力和信息传达效率。");
+    suggestions.push("Add relevant images to improve visual appeal and communication.");
   }
   
   if (!hasLists) {
-    suggestions.push("考虑使用列表来组织信息，使其更易于阅读和理解。");
+    suggestions.push("Consider using lists to organize information for easier reading and understanding.");
   }
   
   if (!hasHeadings || content.content.filter(item => item.type === 'heading').length < 2) {
-    suggestions.push("增加更多的标题层级，帮助用户快速浏览和理解内容结构。");
+    suggestions.push("Add more heading levels to help users quickly scan and understand the content structure.");
   }
   
   if (suggestions.length === 0) {
-    return "页面结构良好，建议保持当前的组织方式。";
+    return "The page structure looks good; keep the current organization.";
   }
   
   return suggestions.join(' ');
@@ -127,14 +127,14 @@ const generateTypographySuggestions = (content: NotionContent): string => {
   const paragraphCount = content.content.filter(item => item.type === 'paragraph').length;
   
   if (paragraphCount === 0) {
-    return "建议添加详细的段落内容，为用户提供更多有价值的信息。";
+    return "Add detailed paragraphs to provide more valuable information.";
   }
   
   if (paragraphCount < 3) {
-    return "考虑增加更多的内容段落，使页面更加丰富和全面。";
+    return "Consider adding more paragraphs to make the page more comprehensive.";
   }
   
-  return "内容排版合理，建议使用一致的字体样式和间距，提高可读性。";
+  return "Typography looks good; use consistent font styles and spacing to improve readability.";
 };
 
 /**
@@ -149,18 +149,18 @@ const generateSEOSuggestions = (content: NotionContent): string => {
                           content.title.toLowerCase().includes('指南') || 
                           content.title.toLowerCase().includes('教程');
   
-  let suggestions = [];
+  let suggestions: string[] = [];
   
   if (titleLength < 10 || titleLength > 70) {
-    suggestions.push("标题长度建议在10-70个字符之间，以获得更好的搜索引擎显示效果。");
+    suggestions.push("Keep the title length between 10 and 70 characters for better search engine display.");
   }
   
   if (!hasKeywordInTitle) {
-    suggestions.push("考虑在标题中包含相关关键词，提高搜索引擎优化效果。");
+    suggestions.push("Consider including relevant keywords in the title to improve SEO.");
   }
   
   if (suggestions.length === 0) {
-    return "SEO表现良好，建议添加合适的元描述和关键词标签。";
+    return "SEO looks good; add an appropriate meta description and keyword tags.";
   }
   
   return suggestions.join(' ');
@@ -187,7 +187,7 @@ export const optimizeContentForWeb = (content: NotionContent): NotionContent => 
         ...item,
         properties: {
           ...item.properties,
-          altText: '相关图片展示'
+          altText: 'Related image'
         }
       };
     }

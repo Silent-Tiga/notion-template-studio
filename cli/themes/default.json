@@ -1,0 +1,9 @@
+{
+  "primaryColor": "#4F46E5",
+  "secondaryColor": "#8B5CF6",
+  "backgroundColor": "#ffffff",
+  "textColor": "#1F2937",
+  "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  "fontSize": "16px",
+  "accentColor": "#10B981"
+}

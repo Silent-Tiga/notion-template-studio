@@ -24,7 +24,7 @@ const Footer: React.FC = () => {
                 </span>
             </div>
             <p className="text-neutral-400 mb-6 max-w-md text-lg leading-relaxed">
-                使用AI技术将Notion文档转换为响应式网站，无需编写代码，轻松分享您的想法与知识。
+                Use AI to convert Notion documents into responsive websites — no code required. Share your ideas and knowledge with ease.
               </p>
             <div className="flex space-x-4">
               <a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-110 transform hover:-translate-y-1 relative group" aria-label="Twitter">
@@ -43,57 +43,57 @@ const Footer: React.FC = () => {
           </div>
           <div className="group">
             <h4 className="text-lg font-semibold mb-5 text-white relative inline-block">
-              <span className="relative z-10">快速链接</span>
+              <span className="relative z-10">Quick Links</span>
               <span className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
             </h4>
             <ul className="space-y-3">
               <li><Link to="/" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">首页</span>
+                <span className="ml-3">Home</span>
               </Link></li>
               <li><Link to="/convert" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">转换</span>
+                <span className="ml-3">Convert</span>
               </Link></li>
               <li><Link to="/pricing" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">定价</span>
+                <span className="ml-3">Pricing</span>
               </Link></li>
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">示例</span>
+                <span className="ml-3">Examples</span>
               </a></li>
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">文档</span>
+                <span className="ml-3">Docs</span>
               </a></li>
             </ul>
           </div>
           <div className="group">
-            <h4 className="text-lg font-semibold mb-5 text-white relative inline-block">
-              <span className="relative z-10">资源</span>
+            <h4 className="text-lg font-semibold mb-5 text白 relative inline-block">
+              <span className="relative z-10">Resources</span>
               <span className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
             </h4>
             <ul className="space-y-3">
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">博客</span>
+                <span className="ml-3">Blog</span>
               </a></li>
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">教程</span>
+                <span className="ml-3">Tutorials</span>
               </a></li>
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">支持</span>
+                <span className="ml-3">Support</span>
               </a></li>
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">隐私政策</span>
+                <span className="ml-3">Privacy Policy</span>
               </a></li>
               <li><a href="#" className="text-neutral-400 hover:text-white transition-all duration-300 hover:scale-105 transform hover:-translate-y-0.5 relative group flex items-center">
                 <span className="absolute w-1.5 h-1.5 bg-primary rounded-full mr-2 transform scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-                <span className="ml-3">服务条款</span>
+                <span className="ml-3">Terms of Service</span>
               </a></li>
             </ul>
           </div>
@@ -101,9 +101,9 @@ const Footer: React.FC = () => {
         <div className="border-t border-neutral-800 mt-12 pt-8 text-center text-neutral-500 text-sm">
             <p>&copy; {new Date().getFullYear()} AI Notion. All rights reserved.</p>
             <div className="mt-4 flex flex-wrap justify-center gap-4">
-              <a href="#privacy" className="hover:text-white transition-colors duration-300 text-xs">隐私政策</a>
-              <a href="#terms" className="hover:text-white transition-colors duration-300 text-xs">服务条款</a>
-              <a href="#cookies" className="hover:text-white transition-colors duration-300 text-xs">Cookie政策</a>
+              <a href="#privacy" className="hover:text白 transition-colors duration-300 text-xs">Privacy Policy</a>
+              <a href="#terms" className="hover:text白 transition-colors duration-300 text-xs">Terms of Service</a>
+              <a href="#cookies" className="hover:text白 transition-colors duration-300 text-xs">Cookie Policy</a>
             </div>
           </div>
       </div>
