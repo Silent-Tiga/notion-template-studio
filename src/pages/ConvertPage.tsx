@@ -13,6 +13,7 @@ import SeoCheck from '../components/SeoCheck';
 import type { NotionContent } from '../services/notionAPI';
 import type { SiteManifest } from '../types';
 import { siteSync } from '../services/backendAPI';
+import { saveUserNotionKey } from '../services/settingsAPI';
 
 interface ConvertPageProps {
   onGeneratePreview?: (notionLink: string) => Promise<void>;
@@ -52,6 +53,12 @@ const ConvertPage: React.FC<ConvertPageProps> = () => {
         // 如果用户提供了 API Key，则跳过共享密钥校验，直接转换
         if (apiKey && apiKey.trim().length > 0) {
           showNotification('使用你提供的 API Key 转换...', 'info');
+          try {
+            await saveUserNotionKey(apiKey);
+            showNotification('已保存你的 Notion API Key（仅本人可见）', 'success');
+          } catch (e) {
+            showNotification('保存你的 API Key 失败，但仍会继续转换', 'warning');
+          }
           const workerContent = await convertViaWorker({ url: input, useAI: false, apiKey });
           const notionContent: NotionContent = {
             title: workerContent.title || 'Untitled',
