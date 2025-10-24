@@ -49,37 +49,64 @@ const ConvertPage: React.FC<ConvertPageProps> = () => {
           setIsProcessing(false);
           return;
         }
-        showNotification('校验公开权限...', 'info');
-        const check = await checkPublic(input);
-        if (!check.ok) {
-          setShowAuthCard(true);
-          setAuthTip(check.tip || '页面尚未授权给我们的 Integration。');
-          showNotification('页面未授权，请在 Notion 中邀请 Integration。', 'warning');
-          setIsProcessing(false);
-          return;
+        // 如果用户提供了 API Key，则跳过共享密钥校验，直接转换
+        if (apiKey && apiKey.trim().length > 0) {
+          showNotification('使用你提供的 API Key 转换...', 'info');
+          const workerContent = await convertViaWorker({ url: input, useAI: false, apiKey });
+          const notionContent: NotionContent = {
+            title: workerContent.title || 'Untitled',
+            content: (workerContent.content || []).map((c: any) => ({
+              id: c.id,
+              type: ['heading','paragraph','image','list','table','callout','quote','toggle'].includes(c.type) ? c.type : 'paragraph',
+              content: typeof c.content === 'string' ? c.content : '',
+              properties: c.properties || undefined
+            })),
+            coverImage: workerContent.coverImage || undefined,
+            icon: workerContent.icon || undefined
+          };
+          const previewData = await generateHTML(notionContent);
+          setGeneratedPreview(previewData);
+          showNotification('生成 AI 优化指南...', 'info');
+          const guide = await generateAIGuide(notionContent);
+          setAIGuide(guide);
+          showNotification('准备导出包...', 'info');
+          const exportPkg = await createExportPackage(previewData);
+          setExportPackage(exportPkg);
+          showNotification('转换成功！可预览与导出。', 'success');
+        } else {
+          // 未提供 API Key，使用共享只读密钥并先做权限校验
+          showNotification('校验公开权限...', 'info');
+          const check = await checkPublic(input);
+          if (!check.ok) {
+            setShowAuthCard(true);
+            setAuthTip(check.tip || '页面尚未授权给我们的 Integration。');
+            showNotification('页面未授权，请在 Notion 中邀请 Integration。', 'warning');
+            setIsProcessing(false);
+            return;
+          }
+          showNotification('使用共享密钥转换...', 'info');
+          const workerContent = await convertViaWorker({ url: input, useAI: false });
+          const notionContent: NotionContent = {
+            title: workerContent.title || 'Untitled',
+            content: (workerContent.content || []).map((c: any) => ({
+              id: c.id,
+              type: ['heading','paragraph','image','list','table','callout','quote','toggle'].includes(c.type) ? c.type : 'paragraph',
+              content: typeof c.content === 'string' ? c.content : '',
+              properties: c.properties || undefined
+            })),
+            coverImage: workerContent.coverImage || undefined,
+            icon: workerContent.icon || undefined
+          };
+          const previewData = await generateHTML(notionContent);
+          setGeneratedPreview(previewData);
+          showNotification('生成 AI 优化指南...', 'info');
+          const guide = await generateAIGuide(notionContent);
+          setAIGuide(guide);
+          showNotification('准备导出包...', 'info');
+          const exportPkg = await createExportPackage(previewData);
+          setExportPackage(exportPkg);
+          showNotification('转换成功！可预览与导出。', 'success');
         }
-        showNotification('使用共享密钥转换...', 'info');
-        const workerContent = await convertViaWorker({ url: input, useAI: false });
-        const notionContent: NotionContent = {
-          title: workerContent.title || 'Untitled',
-          content: (workerContent.content || []).map((c: any) => ({
-            id: c.id,
-            type: ['heading','paragraph','image','list','table','callout','quote','toggle'].includes(c.type) ? c.type : 'paragraph',
-            content: typeof c.content === 'string' ? c.content : '',
-            properties: c.properties || undefined
-          })),
-          coverImage: workerContent.coverImage || undefined,
-          icon: workerContent.icon || undefined
-        };
-        const previewData = await generateHTML(notionContent);
-        setGeneratedPreview(previewData);
-        showNotification('生成 AI 优化指南...', 'info');
-        const guide = await generateAIGuide(notionContent);
-        setAIGuide(guide);
-        showNotification('准备导出包...', 'info');
-        const exportPkg = await createExportPackage(previewData);
-        setExportPackage(exportPkg);
-        showNotification('转换成功！可预览与导出。', 'success');
       } else {
         // 站点模式：数据库 → 多页面站点
         if (!input || input.trim().length === 0) {

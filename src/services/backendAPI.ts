@@ -15,7 +15,7 @@ export async function checkPublic(url: string): Promise<{ ok: boolean; isPublic?
   return { ok: true, isPublic: data.isPublic, tip: data.tip };
 }
 
-export async function convertViaWorker(payload: { url: string; useAI?: boolean }): Promise<any> {
+export async function convertViaWorker(payload: { url: string; useAI?: boolean; apiKey?: string }): Promise<any> {
   const res = await fetch(`${BACKEND_BASE}/notion-to-html`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
