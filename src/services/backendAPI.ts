@@ -2,10 +2,19 @@
 
 export const BACKEND_BASE = '/.netlify/functions';
 
+function getAuthHeaders(): HeadersInit {
+  const anyWin = window as any;
+  const user = anyWin.netlifyIdentity?.currentUser?.() || null;
+  const token = user?.token?.access_token;
+  const headers: any = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
 export async function checkPublic(url: string): Promise<{ ok: boolean; isPublic?: boolean; tip?: string }> {
   const res = await fetch(`${BACKEND_BASE}/check-public`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ url })
   });
   if (!res.ok) {
@@ -18,7 +27,7 @@ export async function checkPublic(url: string): Promise<{ ok: boolean; isPublic?
 export async function convertViaWorker(payload: { url: string; useAI?: boolean; apiKey?: string }): Promise<any> {
   const res = await fetch(`${BACKEND_BASE}/notion-to-html`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
@@ -45,7 +54,7 @@ export interface SiteManifest {
 export async function convertDatabaseToSite(payload: DbConvertPayload): Promise<SiteManifest> {
   const res = await fetch(`${BACKEND_BASE}/db-to-site`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
@@ -76,7 +85,7 @@ export async function siteSync(payload: SiteSyncPayload): Promise<SiteSyncResult
   const endpoint = '/.netlify/functions/site-sync';
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('站点同步失败');

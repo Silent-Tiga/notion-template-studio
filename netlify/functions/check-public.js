@@ -1,8 +1,23 @@
 // Netlify Function: check-public
-// Checks if the Notion page is accessible with the shared Integration key
+// Checks if the Notion page is accessible with a Notion Integration key
 
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_API_VERSION = '2022-06-28';
+const AV = require('leancloud-storage');
+
+function initLeanCloud() {
+  const appId = process.env.LC_APP_ID;
+  const appKey = process.env.LC_APP_KEY;
+  const serverURL = process.env.LC_SERVER_URL;
+  if (!appId || !appKey || !serverURL) return false;
+  AV.init({ appId, appKey, serverURL });
+  return true;
+}
+
+function getUserId(context) {
+  const user = context && context.clientContext && context.clientContext.user;
+  return user && (user.sub || user.user_id || user.id) || null;
+}
 
 const json = (status, data) => ({
   statusCode: status,
@@ -20,7 +35,7 @@ const extractPageId = (notionLink = '') => {
   }
 };
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return json(405, { error: 'Method Not Allowed' });
   }
@@ -34,9 +49,21 @@ exports.handler = async (event) => {
       return json(400, { success: false, isPublic: false, tip: 'Invalid Notion link. Please provide a valid page URL.' });
     }
 
-    const apiKey = process.env.NOTION_API_KEY;
+    // Prefer apiKey from body, fallback to env, then per-user saved key
+    let apiKey = body.apiKey || process.env.NOTION_API_KEY;
     if (!apiKey) {
-      return json(500, { success: false, error: 'Shared NOTION_API_KEY is not configured on Netlify.' });
+      const uid = getUserId(context);
+      if (uid && initLeanCloud()) {
+        const query = new AV.Query('UserSettings');
+        query.equalTo('ownerId', uid);
+        const obj = await query.first();
+        const savedKey = obj ? obj.get('notionApiKey') : null;
+        if (savedKey) apiKey = savedKey;
+      }
+    }
+
+    if (!apiKey) {
+      return json(500, { success: false, error: 'NOTION_API_KEY not found. Provide your key or configure shared key.' });
     }
 
     const resp = await fetch(`${NOTION_API_BASE}/pages/${pageId}`, {
@@ -57,7 +84,7 @@ exports.handler = async (event) => {
         success: true,
         isPublic: true,
         pageId,
-        tip: 'Page is accessible via the shared Integration key.',
+        tip: 'Page is accessible with the provided Integration key.',
         title: title || 'Untitled'
       });
     }

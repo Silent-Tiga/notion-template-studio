@@ -3,6 +3,21 @@
 
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_API_VERSION = '2022-06-28';
+const AV = require('leancloud-storage');
+
+function initLeanCloud() {
+  const appId = process.env.LC_APP_ID;
+  const appKey = process.env.LC_APP_KEY;
+  const serverURL = process.env.LC_SERVER_URL;
+  if (!appId || !appKey || !serverURL) return false;
+  AV.init({ appId, appKey, serverURL });
+  return true;
+}
+
+function getUserId(context) {
+  const user = context && context.clientContext && context.clientContext.user;
+  return user && (user.sub || user.user_id || user.id) || null;
+}
 
 const json = (status, data) => ({
   statusCode: status,
@@ -87,7 +102,7 @@ const normalizeBlocks = (blocks = []) => {
   });
 };
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return json(405, { error: 'Method Not Allowed' });
   }
@@ -96,7 +111,19 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const url = body.url || '';
     const providedPageId = body.pageId || extractPageId(url);
-    const apiKey = body.apiKey || process.env.NOTION_API_KEY;
+    let apiKey = body.apiKey || process.env.NOTION_API_KEY;
+
+    // Fallback to per-user saved key (LeanCloud) if not provided
+    if (!apiKey) {
+      const uid = getUserId(context);
+      if (uid && initLeanCloud()) {
+        const query = new AV.Query('UserSettings');
+        query.equalTo('ownerId', uid);
+        const obj = await query.first();
+        const savedKey = obj ? obj.get('notionApiKey') : null;
+        if (savedKey) apiKey = savedKey;
+      }
+    }
 
     if (!providedPageId) {
       return json(400, { error: 'Invalid Notion link. Please provide a valid page URL.' });
