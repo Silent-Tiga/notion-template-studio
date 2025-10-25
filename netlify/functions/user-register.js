@@ -2,9 +2,6 @@
 // Purpose: Register current Netlify Identity user into DB; only registered users can convert
 // Methods: GET(status), POST(register)
 
-// Netlify Function: user-register
-// Purpose: Initialize per-user resources on first sign-in
-
 const AV = require('leancloud-storage');
 
 function initLeanCloud() {
@@ -29,25 +26,6 @@ function corsHeaders() {
   };
 }
 
-function getUser(context) {
-  const user = context && context.clientContext && context.clientContext.user;
-  if (!user) return null;
-  const id = user.sub || user.user_id || user.id;
-  const email = user.email || user.email_verified || undefined;
-  const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || undefined;
-  return { id, email, name };
-}
-
-function normalizeProfile(obj) {
-  const attrs = obj.toJSON();
-  return {
-    ownerId: attrs.ownerId,
-    email: attrs.email || undefined,
-    name: attrs.name || undefined,
-    createdAt: obj.createdAt ? obj.createdAt.toISOString() : undefined
-  };
-}
-
 function getAuthHeader(event) {
   const h = (event && event.headers) || {};
   return h.authorization || h.Authorization || '';
@@ -67,54 +45,20 @@ function parseJwtSub(authHeader) {
   }
 }
 
-function getUserId(context, event) {
-  const user = context && context.clientContext && context.clientContext.user;
-  const ctxId = user && (user.sub || user.user_id || user.id) || null;
-  if (ctxId) return ctxId;
-  const sub = parseJwtSub(getAuthHeader(event));
-  return sub || null;
-}
-
-exports.handler = async (event, context) => {
-  const headers = corsHeaders();
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
-  try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
-    }
-    initLeanCloud();
-
-    const uid = getUserId(context, event);
-    if (!uid) return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
-
-    // Create a default settings row if not exists
-    const query = new AV.Query('UserSettings');
-    query.equalTo('ownerId', uid);
-    let obj = await query.first();
-    if (!obj) {
-      const Settings = AV.Object.extend('UserSettings');
-      obj = new Settings();
-      obj.set('ownerId', uid);
-      await obj.save();
-    }
-
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
-  } catch (err) {
-    const msg = String(err || '');
-    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
-  }
-};
-
-function getUser(context) {
+function getUserFromContext(context) {
   const user = context && context.clientContext && context.clientContext.user;
   if (!user) return null;
   const id = user.sub || user.user_id || user.id;
-  const email = user.email || user.email_verified || undefined;
+  const email = user.email || undefined;
   const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || undefined;
   return { id, email, name };
+}
+
+function getUserId(context, event) {
+  const fromCtx = getUserFromContext(context);
+  if (fromCtx && fromCtx.id) return fromCtx.id;
+  const sub = parseJwtSub(getAuthHeader(event));
+  return sub || null;
 }
 
 function normalizeProfile(obj) {
@@ -135,33 +79,31 @@ exports.handler = async (event, context) => {
 
   try {
     initLeanCloud();
-    const u = getUser(context);
-    if (!u || !u.id) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
-    }
+    const uid = getUserId(context, event);
+    if (!uid) return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
 
     const method = event.httpMethod;
     const User = AV.Object.extend('User');
 
     if (method === 'GET') {
       const query = new AV.Query('User');
-      query.equalTo('ownerId', u.id);
+      query.equalTo('ownerId', uid);
       const obj = await query.first();
       const registered = !!obj;
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, registered, profile: obj ? normalizeProfile(obj) : null }) };
     }
 
     if (method === 'POST') {
-      // upsert
+      const uCtx = getUserFromContext(context) || {};
       const query = new AV.Query('User');
-      query.equalTo('ownerId', u.id);
+      query.equalTo('ownerId', uid);
       let obj = await query.first();
       if (!obj) {
         obj = new User();
-        obj.set('ownerId', u.id);
+        obj.set('ownerId', uid);
       }
-      if (u.email) obj.set('email', u.email);
-      if (u.name) obj.set('name', u.name);
+      if (uCtx.email) obj.set('email', uCtx.email);
+      if (uCtx.name) obj.set('name', uCtx.name);
       await obj.save();
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, registered: true, profile: normalizeProfile(obj) }) };
     }
