@@ -21,6 +21,10 @@ function initLeanCloud() {
   }
 }
 
+function isClassMissing(err) {
+  return /Class or object doesn'?t exists/i.test(String(err || ''));
+}
+
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -111,9 +115,20 @@ exports.handler = async (event, context) => {
   if (!uid || !initLeanCloud()) {
     return json(401, { error: 'guest_not_allowed: 请先登录并注册' });
   }
-  const userQuery = new AV.Query('User');
-  userQuery.equalTo('ownerId', uid);
-  const userObj = await userQuery.first();
+-  const userQuery = new AV.Query('User');
+-  userQuery.equalTo('ownerId', uid);
+-  const userObj = await userQuery.first();
++  let userObj;
++  try {
++    const userQuery = new AV.Query('UserProfile');
++    userQuery.equalTo('ownerId', uid);
++    userObj = await userQuery.first();
++  } catch (e) {
++    if (isClassMissing(e)) {
++      return json(403, { error: 'not_registered: 请先完成注册' });
++    }
++    throw e;
++  }
   if (!userObj) {
     return json(403, { error: 'not_registered: 请先完成注册' });
   }

@@ -8,9 +8,19 @@ function initLeanCloud() {
   const appId = process.env.LC_APP_ID;
   const appKey = process.env.LC_APP_KEY;
   const serverURL = process.env.LC_SERVER_URL;
+  const masterKey = process.env.LC_MASTER_KEY;
   if (!appId || !appKey || !serverURL) return false;
-  AV.init({ appId, appKey, serverURL });
+  if (masterKey) {
+    AV.init({ appId, appKey, serverURL, masterKey });
+    AV.Cloud.useMasterKey();
+  } else {
+    AV.init({ appId, appKey, serverURL });
+  }
   return true;
+}
+
+function isClassMissing(err) {
+  return /Class or object doesn'?t exists/i.test(String(err || ''));
 }
 
 function getUserId(context) {
@@ -46,12 +56,23 @@ exports.handler = async (event, context) => {
         if (!uid || !initLeanCloud()) {
           return { statusCode: 401, headers: { 'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({ success: false, error: 'guest_not_allowed: 请先登录并注册' }) };
         }
-        const userQuery = new AV.Query('User');
-        userQuery.equalTo('ownerId', uid);
-        const userObj = await userQuery.first();
-        if (!userObj) {
-          return { statusCode: 403, headers: { 'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({ success: false, error: 'not_registered: 请先完成注册' }) };
-        }
+-        const userQuery = new AV.Query('User');
+-        userQuery.equalTo('ownerId', uid);
+-        const userObj = await userQuery.first();
++        let userObj;
++        try {
++          const userQuery = new AV.Query('UserProfile');
++          userQuery.equalTo('ownerId', uid);
++          userObj = await userQuery.first();
++        } catch (e) {
++          if (isClassMissing(e)) {
++            return { statusCode: 403, headers: { 'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({ success: false, error: 'not_registered: 请先完成注册' }) };
++          }
++          throw e;
++        }
+         if (!userObj) {
+           return { statusCode: 403, headers: { 'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({ success: false, error: 'not_registered: 请先完成注册' }) };
+         }
 
         const body = event.body ? JSON.parse(event.body) : {};
         databaseId = body.databaseId || databaseId;
