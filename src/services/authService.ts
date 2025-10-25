@@ -45,7 +45,16 @@ export function initIdentity() {
       currentUser = null;
       notify();
     });
-    identity.init();
+    try {
+      const APIUrl = (import.meta as any).env?.VITE_NETLIFY_IDENTITY_API_URL || '';
+      if (APIUrl) {
+        identity.init({ APIUrl });
+      } else {
+        identity.init();
+      }
+    } catch {
+      identity.init();
+    }
   }
 }
 

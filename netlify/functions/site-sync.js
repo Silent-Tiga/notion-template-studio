@@ -2,7 +2,23 @@
 // - Scheduled via netlify.toml (cron)
 // - Also supports manual HTTP trigger for on-demand refresh
 
-exports.handler = async (event) => {
+const AV = require('leancloud-storage');
+
+function initLeanCloud() {
+  const appId = process.env.LC_APP_ID;
+  const appKey = process.env.LC_APP_KEY;
+  const serverURL = process.env.LC_SERVER_URL;
+  if (!appId || !appKey || !serverURL) return false;
+  AV.init({ appId, appKey, serverURL });
+  return true;
+}
+
+function getUserId(context) {
+  const user = context && context.clientContext && context.clientContext.user;
+  return user && (user.sub || user.user_id || user.id) || null;
+}
+
+exports.handler = async (event, context) => {
   const now = new Date().toISOString();
   const isHttp = !!event.httpMethod;
 
@@ -19,12 +35,24 @@ exports.handler = async (event) => {
           headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
           },
           body: ''
         };
       }
       if (event.httpMethod === 'POST') {
+        // Require registered user for manual trigger
+        const uid = getUserId(context);
+        if (!uid || !initLeanCloud()) {
+          return { statusCode: 401, headers: { 'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({ success: false, error: 'guest_not_allowed: 请先登录并注册' }) };
+        }
+        const userQuery = new AV.Query('User');
+        userQuery.equalTo('ownerId', uid);
+        const userObj = await userQuery.first();
+        if (!userObj) {
+          return { statusCode: 403, headers: { 'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({ success: false, error: 'not_registered: 请先完成注册' }) };
+        }
+
         const body = event.body ? JSON.parse(event.body) : {};
         databaseId = body.databaseId || databaseId;
         databaseUrl = body.url || databaseUrl;

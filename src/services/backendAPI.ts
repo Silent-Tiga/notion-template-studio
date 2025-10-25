@@ -2,11 +2,21 @@
 
 export const BACKEND_BASE = '/.netlify/functions';
 
-function getAuthHeaders(): HeadersInit {
+async function getAuthHeaders(): Promise<HeadersInit> {
   const anyWin = window as any;
   const user = anyWin.netlifyIdentity?.currentUser?.() || null;
-  const token = user?.token?.access_token;
   const headers: any = { 'Content-Type': 'application/json' };
+  try {
+    // 优先使用最新的 JWT，避免过期令牌
+    if (user?.jwt) {
+      const token = await user.jwt(true);
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return headers;
+    }
+  } catch {
+    // 忽略刷新失败，走旧令牌兜底
+  }
+  const token = user?.token?.access_token;
   if (token) headers['Authorization'] = `Bearer ${token}`;
   return headers;
 }
@@ -14,7 +24,7 @@ function getAuthHeaders(): HeadersInit {
 export async function checkPublic(url: string): Promise<{ ok: boolean; isPublic?: boolean; tip?: string }> {
   const res = await fetch(`${BACKEND_BASE}/check-public`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: await getAuthHeaders(),
     body: JSON.stringify({ url })
   });
   if (!res.ok) {
@@ -27,7 +37,7 @@ export async function checkPublic(url: string): Promise<{ ok: boolean; isPublic?
 export async function convertViaWorker(payload: { url: string; useAI?: boolean; apiKey?: string }): Promise<any> {
   const res = await fetch(`${BACKEND_BASE}/notion-to-html`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: await getAuthHeaders(),
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
@@ -54,7 +64,7 @@ export interface SiteManifest {
 export async function convertDatabaseToSite(payload: DbConvertPayload): Promise<SiteManifest> {
   const res = await fetch(`${BACKEND_BASE}/db-to-site`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: await getAuthHeaders(),
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
@@ -85,7 +95,7 @@ export async function siteSync(payload: SiteSyncPayload): Promise<SiteSyncResult
   const endpoint = '/.netlify/functions/site-sync';
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: await getAuthHeaders(),
     body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('站点同步失败');

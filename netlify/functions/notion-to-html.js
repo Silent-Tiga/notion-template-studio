@@ -113,16 +113,25 @@ exports.handler = async (event, context) => {
     const providedPageId = body.pageId || extractPageId(url);
     let apiKey = body.apiKey || process.env.NOTION_API_KEY;
 
+    // Require registered user
+    const uid = getUserId(context);
+    if (!uid || !initLeanCloud()) {
+      return json(401, { error: 'guest_not_allowed: 请先登录并注册' });
+    }
+    const userQuery = new AV.Query('User');
+    userQuery.equalTo('ownerId', uid);
+    const userObj = await userQuery.first();
+    if (!userObj) {
+      return json(403, { error: 'not_registered: 请先完成注册' });
+    }
+
     // Fallback to per-user saved key (LeanCloud) if not provided
     if (!apiKey) {
-      const uid = getUserId(context);
-      if (uid && initLeanCloud()) {
-        const query = new AV.Query('UserSettings');
-        query.equalTo('ownerId', uid);
-        const obj = await query.first();
-        const savedKey = obj ? obj.get('notionApiKey') : null;
-        if (savedKey) apiKey = savedKey;
-      }
+      const query = new AV.Query('UserSettings');
+      query.equalTo('ownerId', uid);
+      const obj = await query.first();
+      const savedKey = obj ? obj.get('notionApiKey') : null;
+      if (savedKey) apiKey = savedKey;
     }
 
     if (!providedPageId) {

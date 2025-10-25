@@ -7,8 +7,14 @@ function initLeanCloud() {
   const appId = process.env.LC_APP_ID;
   const appKey = process.env.LC_APP_KEY;
   const serverURL = process.env.LC_SERVER_URL;
+  const masterKey = process.env.LC_MASTER_KEY;
   if (!appId || !appKey || !serverURL) throw new Error('LeanCloud env not set');
-  AV.init({ appId, appKey, serverURL });
+  if (masterKey) {
+    AV.init({ appId, appKey, serverURL, masterKey });
+    AV.Cloud.useMasterKey();
+  } else {
+    AV.init({ appId, appKey, serverURL });
+  }
 }
 
 function corsHeaders() {
@@ -30,12 +36,12 @@ function normalizeProject(obj) {
   return {
     id: obj.id,
     ownerId: attrs.ownerId,
-    siteTitle: attrs.siteTitle,
-    rootDatabaseId: attrs.rootDatabaseId,
-    mappings: attrs.mappings || {},
+    siteTitle: attrs.siteTitle || '未命名站点',
+    rootDatabaseId: attrs.rootDatabaseId || undefined,
+    mappings: attrs.mappings || undefined,
     hostingEnabled: !!attrs.hostingEnabled,
-    exportEnabled: attrs.exportEnabled !== false,
-    createdAt: obj.createdAt ? obj.createdAt.toISOString() : new Date().toISOString(),
+    exportEnabled: !!attrs.exportEnabled,
+    createdAt: obj.createdAt ? obj.createdAt.toISOString() : undefined,
     plan: attrs.plan || 'free'
   };
 }
@@ -77,25 +83,27 @@ exports.handler = async (event, context) => {
       const obj = new Project();
       obj.set('ownerId', uid);
       obj.set('siteTitle', body.siteTitle || '未命名站点');
-      if (body.rootDatabaseId) obj.set('rootDatabaseId', body.rootDatabaseId);
-      obj.set('mappings', body.mappings || {});
+      obj.set('rootDatabaseId', body.rootDatabaseId || undefined);
+      obj.set('mappings', body.mappings || undefined);
       obj.set('hostingEnabled', !!body.hostingEnabled);
-      obj.set('exportEnabled', body.exportEnabled !== false);
+      obj.set('exportEnabled', !!body.exportEnabled);
       obj.set('plan', body.plan || 'free');
       await obj.save();
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: normalizeProject(obj) }) };
     }
 
-    if (method === 'PATCH' || method === 'PUT') {
+    if (method === 'PATCH') {
+      const id = event.queryStringParameters && event.queryStringParameters.id;
       const body = event.body ? JSON.parse(event.body) : {};
-      const id = body.id;
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: 'missing_id' }) };
       const obj = await AV.Object.createWithoutData('Project', id).fetch();
       if (!obj || obj.get('ownerId') !== uid) return { statusCode: 404, headers, body: JSON.stringify({ error: 'not_found' }) };
-      const fields = ['siteTitle', 'rootDatabaseId', 'mappings', 'hostingEnabled', 'exportEnabled', 'plan'];
-      for (const f of fields) {
-        if (body[f] !== undefined) obj.set(f, body[f]);
-      }
+      if (body.siteTitle !== undefined) obj.set('siteTitle', body.siteTitle);
+      if (body.rootDatabaseId !== undefined) obj.set('rootDatabaseId', body.rootDatabaseId);
+      if (body.mappings !== undefined) obj.set('mappings', body.mappings);
+      if (body.hostingEnabled !== undefined) obj.set('hostingEnabled', !!body.hostingEnabled);
+      if (body.exportEnabled !== undefined) obj.set('exportEnabled', !!body.exportEnabled);
+      if (body.plan !== undefined) obj.set('plan', body.plan);
       await obj.save();
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: normalizeProject(obj) }) };
     }
@@ -111,6 +119,10 @@ exports.handler = async (event, context) => {
 
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: String(err) }) };
+    const msg = String(err || '');
+    if (/Class or object doesn'?t exists/i.test(msg)) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'leancloud_class_missing', hint: '请在 LeanCloud 控制台创建数据表 Project 并允许客户端写入，或在环境变量中配置 LC_MASTER_KEY 以启用服务端写入。', raw: msg }) };
+    }
+    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
   }
 };

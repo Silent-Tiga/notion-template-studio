@@ -45,19 +45,28 @@ exports.handler = async (event, context) => {
     return json(400, { error: 'Invalid JSON body' });
   }
 
+  // Require registered user
+  const uid = getUserId(context);
+  if (!uid || !initLeanCloud()) {
+    return json(401, { error: 'guest_not_allowed: 请先登录并注册' });
+  }
+  const userQuery = new AV.Query('User');
+  userQuery.equalTo('ownerId', uid);
+  const userObj = await userQuery.first();
+  if (!userObj) {
+    return json(403, { error: 'not_registered: 请先完成注册' });
+  }
+
   const { url, databaseId, apiKey, slugProperty } = body;
   let notionApiKey = apiKey || process.env.NOTION_API_KEY;
 
   // Fallback to per-user saved key (LeanCloud) if not provided
   if (!notionApiKey) {
-    const uid = getUserId(context);
-    if (uid && initLeanCloud()) {
-      const query = new AV.Query('UserSettings');
-      query.equalTo('ownerId', uid);
-      const obj = await query.first();
-      const savedKey = obj ? obj.get('notionApiKey') : null;
-      if (savedKey) notionApiKey = savedKey;
-    }
+    const query = new AV.Query('UserSettings');
+    query.equalTo('ownerId', uid);
+    const obj = await query.first();
+    const savedKey = obj ? obj.get('notionApiKey') : null;
+    if (savedKey) notionApiKey = savedKey;
   }
 
   try {

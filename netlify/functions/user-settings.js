@@ -8,8 +8,14 @@ function initLeanCloud() {
   const appId = process.env.LC_APP_ID;
   const appKey = process.env.LC_APP_KEY;
   const serverURL = process.env.LC_SERVER_URL;
+  const masterKey = process.env.LC_MASTER_KEY;
   if (!appId || !appKey || !serverURL) throw new Error('LeanCloud env not set');
-  AV.init({ appId, appKey, serverURL });
+  if (masterKey) {
+    AV.init({ appId, appKey, serverURL, masterKey });
+    AV.Cloud.useMasterKey();
+  } else {
+    AV.init({ appId, appKey, serverURL });
+  }
 }
 
 function corsHeaders() {
@@ -76,6 +82,10 @@ exports.handler = async (event, context) => {
 
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: String(err) }) };
+    const msg = String(err || '');
+    if (/Class or object doesn'?t exists/i.test(msg)) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'leancloud_class_missing', hint: '请在 LeanCloud 控制台创建数据表 UserSettings 并允许客户端写入，或在环境变量中配置 LC_MASTER_KEY 以启用服务端写入。', raw: msg }) };
+    }
+    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
   }
 };

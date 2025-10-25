@@ -14,6 +14,8 @@ import type { NotionContent } from '../services/notionAPI';
 import type { SiteManifest } from '../types';
 import { siteSync } from '../services/backendAPI';
 import { saveUserNotionKey } from '../services/settingsAPI';
+import { getRegistrationStatus, registerUser } from '../services/registrationAPI';
+import { initIdentity } from '../services/authService';
 
 interface ConvertPageProps {
   onGeneratePreview?: (notionLink: string) => Promise<void>;
@@ -44,6 +46,34 @@ const ConvertPage: React.FC<ConvertPageProps> = () => {
     setAIGuide(null);
     setSiteManifest(null);
     try {
+      // 登录与注册校验
+      initIdentity();
+      const anyWin = window as any;
+      const identityUser = anyWin.netlifyIdentity?.currentUser?.() || null;
+      if (!identityUser) {
+        showNotification('请先登录并注册后再进行转换。', 'warning');
+        anyWin.netlifyIdentity?.open('signup');
+        setIsProcessing(false);
+        return;
+      }
+      try {
+        const status = await getRegistrationStatus();
+        if (!status.registered) {
+          const r = await registerUser();
+          if (r.registered) {
+            showNotification('已完成注册，可以开始转换。', 'success');
+          } else {
+            showNotification('注册失败，请稍后重试。', 'error');
+            setIsProcessing(false);
+            return;
+          }
+        }
+      } catch (e) {
+        showNotification('检查注册状态失败，请重试。', 'error');
+        setIsProcessing(false);
+        return;
+      }
+
       if (inputMode === 'single') {
         if (!input || !extractPageId(input)) {
           showNotification('无效的 Notion 链接，请检查后重试。', 'error');
