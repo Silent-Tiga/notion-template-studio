@@ -91,7 +91,8 @@ const ConvertPage: React.FC<ConvertPageProps> = () => {
           }
           const workerContent = await convertViaWorker({ url: input, useAI: false, apiKey });
           const notionContent: NotionContent = {
-            title: workerContent.title || 'Untitled',
+            // 修复：后端返回为 pageData.title，而非顶层 title
+            title: (workerContent.pageData?.title as string) || 'Untitled',
             content: (workerContent.content || []).map((c: any) => ({
               id: c.id,
               type: ['heading','paragraph','image','list','table','callout','quote','toggle'].includes(c.type) ? c.type : 'paragraph',
@@ -124,7 +125,8 @@ const ConvertPage: React.FC<ConvertPageProps> = () => {
           showNotification('使用共享密钥转换...', 'info');
           const workerContent = await convertViaWorker({ url: input, useAI: false });
           const notionContent: NotionContent = {
-            title: workerContent.title || 'Untitled',
+            // 修复：后端返回为 pageData.title，而非顶层 title
+            title: (workerContent.pageData?.title as string) || 'Untitled',
             content: (workerContent.content || []).map((c: any) => ({
               id: c.id,
               type: ['heading','paragraph','image','list','table','callout','quote','toggle'].includes(c.type) ? c.type : 'paragraph',
