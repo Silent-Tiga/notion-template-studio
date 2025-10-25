@@ -2,21 +2,82 @@
 // Requires NOTION_API_KEY env var if private; supports public with shared key when possible
 
 const json = (status, body) => ({ statusCode: status, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+// Netlify Function: db-to-site
+// Purpose: Example protected action that needs Identity auth
+
 const AV = require('leancloud-storage');
 
 function initLeanCloud() {
   const appId = process.env.LC_APP_ID;
   const appKey = process.env.LC_APP_KEY;
   const serverURL = process.env.LC_SERVER_URL;
-  if (!appId || !appKey || !serverURL) return false;
-  AV.init({ appId, appKey, serverURL });
-  return true;
+  const masterKey = process.env.LC_MASTER_KEY;
+  if (!appId || !appKey || !serverURL) throw new Error('LeanCloud env not set');
+  if (masterKey) {
+    AV.init({ appId, appKey, serverURL, masterKey });
+    AV.Cloud.useMasterKey();
+  } else {
+    AV.init({ appId, appKey, serverURL });
+  }
 }
 
-function getUserId(context) {
-  const user = context && context.clientContext && context.clientContext.user;
-  return user && (user.sub || user.user_id || user.id) || null;
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  };
 }
+
+function getAuthHeader(event) {
+  const h = (event && event.headers) || {};
+  return h.authorization || h.Authorization || '';
+}
+
+function parseJwtSub(authHeader) {
+  try {
+    const m = String(authHeader || '').match(/^Bearer\s+([^\s]+)$/i);
+    if (!m) return null;
+    const token = m[1];
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    return payload && (payload.sub || payload.user_id || payload.id) || null;
+  } catch {
+    return null;
+  }
+}
+
+function getUserId(context, event) {
+  const user = context && context.clientContext && context.clientContext.user;
+  const ctxId = user && (user.sub || user.user_id || user.id) || null;
+  if (ctxId) return ctxId;
+  const sub = parseJwtSub(getAuthHeader(event));
+  return sub || null;
+}
+
+exports.handler = async (event, context) => {
+  const headers = corsHeaders();
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  try {
+    if (event.httpMethod !== 'POST') {
+      return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
+    }
+    initLeanCloud();
+
+    const uid = getUserId(context, event);
+    if (!uid) return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
+
+    // Placeholder protected action
+    return { statusCode: 200, headers, body: JSON.stringify({ success: true, ownerId: uid }) };
+  } catch (err) {
+    const msg = String(err || '');
+    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
+  }
+};
 
 function slugifySlug(input) {
   const base = (input || '').toString().toLowerCase().trim();

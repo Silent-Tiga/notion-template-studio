@@ -2,6 +2,9 @@
 // Purpose: Register current Netlify Identity user into DB; only registered users can convert
 // Methods: GET(status), POST(register)
 
+// Netlify Function: user-register
+// Purpose: Initialize per-user resources on first sign-in
+
 const AV = require('leancloud-storage');
 
 function initLeanCloud() {
@@ -25,6 +28,85 @@ function corsHeaders() {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
   };
 }
+
+function getUser(context) {
+  const user = context && context.clientContext && context.clientContext.user;
+  if (!user) return null;
+  const id = user.sub || user.user_id || user.id;
+  const email = user.email || user.email_verified || undefined;
+  const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || undefined;
+  return { id, email, name };
+}
+
+function normalizeProfile(obj) {
+  const attrs = obj.toJSON();
+  return {
+    ownerId: attrs.ownerId,
+    email: attrs.email || undefined,
+    name: attrs.name || undefined,
+    createdAt: obj.createdAt ? obj.createdAt.toISOString() : undefined
+  };
+}
+
+function getAuthHeader(event) {
+  const h = (event && event.headers) || {};
+  return h.authorization || h.Authorization || '';
+}
+
+function parseJwtSub(authHeader) {
+  try {
+    const m = String(authHeader || '').match(/^Bearer\s+([^\s]+)$/i);
+    if (!m) return null;
+    const token = m[1];
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    return payload && (payload.sub || payload.user_id || payload.id) || null;
+  } catch {
+    return null;
+  }
+}
+
+function getUserId(context, event) {
+  const user = context && context.clientContext && context.clientContext.user;
+  const ctxId = user && (user.sub || user.user_id || user.id) || null;
+  if (ctxId) return ctxId;
+  const sub = parseJwtSub(getAuthHeader(event));
+  return sub || null;
+}
+
+exports.handler = async (event, context) => {
+  const headers = corsHeaders();
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  try {
+    if (event.httpMethod !== 'POST') {
+      return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
+    }
+    initLeanCloud();
+
+    const uid = getUserId(context, event);
+    if (!uid) return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
+
+    // Create a default settings row if not exists
+    const query = new AV.Query('UserSettings');
+    query.equalTo('ownerId', uid);
+    let obj = await query.first();
+    if (!obj) {
+      const Settings = AV.Object.extend('UserSettings');
+      obj = new Settings();
+      obj.set('ownerId', uid);
+      await obj.save();
+    }
+
+    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+  } catch (err) {
+    const msg = String(err || '');
+    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
+  }
+};
 
 function getUser(context) {
   const user = context && context.clientContext && context.clientContext.user;
