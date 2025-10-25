@@ -91,7 +91,7 @@ exports.handler = async (event, context) => {
 
     if (method === 'GET') {
       try {
-        const query = new AV.Query('User');
+        const query = new AV.Query('UserProfile');
         query.equalTo('ownerId', uid);
         const obj = await query.first();
         const registered = !!obj;
@@ -107,7 +107,7 @@ exports.handler = async (event, context) => {
     if (method === 'POST') {
       let obj;
       try {
-        const query = new AV.Query('User');
+        const query = new AV.Query('UserProfile');
         query.equalTo('ownerId', uid);
         obj = await query.first();
       } catch (e) {
@@ -115,8 +115,8 @@ exports.handler = async (event, context) => {
         obj = null;
       }
       if (!obj) {
-        const User = AV.Object.extend('User');
-        obj = new User();
+        const UserProfile = AV.Object.extend('UserProfile');
+        obj = new UserProfile();
         obj.set('ownerId', uid);
       }
       const uCtx = getUserFromContext(context) || {};
@@ -130,7 +130,7 @@ exports.handler = async (event, context) => {
   } catch (err) {
     const msg = String(err || '');
     if (isClassMissing(err)) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'leancloud_class_missing', hint: '请在 LeanCloud 控制台创建数据表 User 并允许客户端写入，或在环境变量中配置 LC_MASTER_KEY 以启用服务端写入。', raw: msg }) };
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'leancloud_class_missing', hint: '请在 LeanCloud 控制台创建数据表 UserProfile 并允许客户端写入，或在环境变量中配置 LC_MASTER_KEY 以启用服务端写入。', raw: msg }) };
     }
     return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
   }
