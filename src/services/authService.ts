@@ -82,12 +82,21 @@ export async function register() {
 
 export async function logout() {
   const anyWin = window as any;
-  if (anyWin.netlifyIdentity) {
-    anyWin.netlifyIdentity.logout();
-    return;
+  try {
+    if (anyWin.netlifyIdentity) {
+      // 等待身份组件完成注销，避免事件不触发导致UI不更新
+      await anyWin.netlifyIdentity.logout();
+      anyWin.netlifyIdentity.close?.();
+    }
+  } finally {
+    // 强制本地状态清理，确保立即反映为未登录
+    currentUser = null;
+    try {
+      localStorage.removeItem('demoUser');
+      // 兼容 Netlify Identity (gotrue) 的本地存储键，避免残留会话
+      localStorage.removeItem('gotrue.user');
+      localStorage.removeItem('gotrue.refresh_token');
+    } catch {}
+    notify();
   }
-  // Demo logout
-  currentUser = null;
-  localStorage.removeItem('demoUser');
-  notify();
 }
