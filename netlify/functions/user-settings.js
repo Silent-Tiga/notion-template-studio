@@ -63,6 +63,10 @@ function normalizeStatus(obj) {
   };
 }
 
+function isClassMissing(err) {
+  return /Class or object doesn'?t exists/i.test(String(err || ''));
+}
+
 exports.handler = async (event, context) => {
   const headers = corsHeaders();
   if (event.httpMethod === 'OPTIONS') {
@@ -71,6 +75,7 @@ exports.handler = async (event, context) => {
 
   try {
     initLeanCloud();
+    const hasMaster = !!process.env.LC_MASTER_KEY;
     const uid = getUserId(context, event);
     if (!uid) return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
 
@@ -78,10 +83,18 @@ exports.handler = async (event, context) => {
     const Settings = AV.Object.extend('UserSettings');
 
     if (method === 'GET') {
-      const query = new AV.Query('UserSettings');
-      query.equalTo('ownerId', uid);
-      const obj = await query.first();
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: normalizeStatus(obj) }) };
+      try {
+        const query = new AV.Query('UserSettings');
+        query.equalTo('ownerId', uid);
+        const obj = await query.first();
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: normalizeStatus(obj) }) };
+      } catch (e) {
+        if (isClassMissing(e) && hasMaster) {
+          // 表不存在但有 masterKey，视为尚未初始化，返回无密钥状态
+          return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: { hasKey: false } }) };
+        }
+        throw e;
+      }
     }
 
     if (method === 'PATCH' || method === 'PUT') {
@@ -90,14 +103,20 @@ exports.handler = async (event, context) => {
       if (!notionApiKey || typeof notionApiKey !== 'string') {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'missing_notionApiKey' }) };
       }
-      const query = new AV.Query('UserSettings');
-      query.equalTo('ownerId', uid);
-      let obj = await query.first();
+      let obj;
+      try {
+        const query = new AV.Query('UserSettings');
+        query.equalTo('ownerId', uid);
+        obj = await query.first();
+      } catch (e) {
+        if (!(isClassMissing(e) && hasMaster)) throw e;
+        // 表不存在但有 masterKey，直接创建
+        obj = null;
+      }
       if (!obj) {
         obj = new Settings();
         obj.set('ownerId', uid);
       }
-      // Store the raw key; access to this function is guarded by Netlify Identity
       obj.set('notionApiKey', notionApiKey);
       await obj.save();
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: normalizeStatus(obj) }) };
@@ -106,7 +125,7 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
   } catch (err) {
     const msg = String(err || '');
-    if (/Class or object doesn'?t exists/i.test(msg)) {
+    if (isClassMissing(err)) {
       return { statusCode: 500, headers, body: JSON.stringify({ error: 'leancloud_class_missing', hint: '请在 LeanCloud 控制台创建数据表 UserSettings 并允许客户端写入，或在环境变量中配置 LC_MASTER_KEY 以启用服务端写入。', raw: msg }) };
     }
     return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };

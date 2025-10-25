@@ -71,6 +71,10 @@ function normalizeProfile(obj) {
   };
 }
 
+function isClassMissing(err) {
+  return /Class or object doesn'?t exists/i.test(String(err || ''));
+}
+
 exports.handler = async (event, context) => {
   const headers = corsHeaders();
   if (event.httpMethod === 'OPTIONS') {
@@ -79,29 +83,43 @@ exports.handler = async (event, context) => {
 
   try {
     initLeanCloud();
+    const hasMaster = !!process.env.LC_MASTER_KEY;
     const uid = getUserId(context, event);
     if (!uid) return { statusCode: 401, headers, body: JSON.stringify({ error: 'unauthorized' }) };
 
     const method = event.httpMethod;
-    const User = AV.Object.extend('User');
 
     if (method === 'GET') {
-      const query = new AV.Query('User');
-      query.equalTo('ownerId', uid);
-      const obj = await query.first();
-      const registered = !!obj;
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, registered, profile: obj ? normalizeProfile(obj) : null }) };
+      try {
+        const query = new AV.Query('User');
+        query.equalTo('ownerId', uid);
+        const obj = await query.first();
+        const registered = !!obj;
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, registered, profile: obj ? normalizeProfile(obj) : null }) };
+      } catch (e) {
+        if (isClassMissing(e) && hasMaster) {
+          return { statusCode: 200, headers, body: JSON.stringify({ success: true, registered: false, profile: null }) };
+        }
+        throw e;
+      }
     }
 
     if (method === 'POST') {
-      const uCtx = getUserFromContext(context) || {};
-      const query = new AV.Query('User');
-      query.equalTo('ownerId', uid);
-      let obj = await query.first();
+      let obj;
+      try {
+        const query = new AV.Query('User');
+        query.equalTo('ownerId', uid);
+        obj = await query.first();
+      } catch (e) {
+        if (!(isClassMissing(e) && hasMaster)) throw e;
+        obj = null;
+      }
       if (!obj) {
+        const User = AV.Object.extend('User');
         obj = new User();
         obj.set('ownerId', uid);
       }
+      const uCtx = getUserFromContext(context) || {};
       if (uCtx.email) obj.set('email', uCtx.email);
       if (uCtx.name) obj.set('name', uCtx.name);
       await obj.save();
@@ -111,7 +129,7 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'method_not_allowed' }) };
   } catch (err) {
     const msg = String(err || '');
-    if (/Class or object doesn'?t exists/i.test(msg)) {
+    if (isClassMissing(err)) {
       return { statusCode: 500, headers, body: JSON.stringify({ error: 'leancloud_class_missing', hint: '请在 LeanCloud 控制台创建数据表 User 并允许客户端写入，或在环境变量中配置 LC_MASTER_KEY 以启用服务端写入。', raw: msg }) };
     }
     return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
