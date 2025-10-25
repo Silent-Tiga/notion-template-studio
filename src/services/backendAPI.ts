@@ -1,6 +1,6 @@
 // Backend API service for Netlify Functions endpoints
 
-export const BACKEND_BASE = '/.netlify/functions';
+export const BACKEND_BASE = import.meta.env.VITE_BACKEND_BASE || '/.netlify/functions';
 
 async function getAuthHeaders(): Promise<HeadersInit> {
   const anyWin = window as any;
@@ -92,7 +92,7 @@ export interface SiteSyncResult {
 }
 
 export async function siteSync(payload: SiteSyncPayload): Promise<SiteSyncResult> {
-  const endpoint = '/.netlify/functions/site-sync';
+  const endpoint = `${BACKEND_BASE}/site-sync`;
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: await getAuthHeaders(),
